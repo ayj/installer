@@ -1,0 +1,71 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-operator
+  labels:
+    app: istio-operator
+rules:
+  # TODO - use broad privileges for prototype. Reduce to min scope later.
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-operator
+  labels:
+    app: istio-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-operator
+subjects:
+- kind: ServiceAccount
+  name: istio-operator
+  namespace: istio-operator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-operator
+  labels:
+    app: istio-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-operator
+  labels:
+    app: istio-operator
+spec:
+  selector:
+    matchLabels:
+      app: istio-operator
+  template:
+    metadata:
+      labels:
+        app: istio-operator
+    spec:
+      serviceAccountName: istio-operator
+      containers:
+      - name: istio-operator
+        image: jasonayoung/istio-operator:v1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: istio-templates
+          mountPath: /var/run/istio-templates
+        - name: istio-values
+          mountPath: /var/run/istio-values
+      volumes:
+        - name: istio-templates
+          configMap:
+            name: istio-operator
+        - name: istio-values
+          configMap:
+            name: istio-values
+            optional: true

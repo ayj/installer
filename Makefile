@@ -73,7 +73,7 @@ export ISTIOCTL_BIN ?= /usr/local/bin/istioctl
 # This enables injection of sidecar in all namespaces with the default sidecar.
 # if it is false, use the specified sidecar.
 ENABLE_NAMESPACES_BY_DEFAULT ?= true
-CUSTOM_SIDECAR_INJECTOR_NAMESPACE ?= 
+CUSTOM_SIDECAR_INJECTOR_NAMESPACE ?=
 
 # Namespace and environment running the control plane.
 # A cluster must support multiple control plane versions.
@@ -335,3 +335,11 @@ include test/noauth.mk
 include test/demo.mk
 include test/canary/canary.mk
 include Makefile.common.mk
+
+# kubectl create namespace istio-operator
+# kubectl -n istio-operator apply -f istio-operator-configmap.yaml
+# kubectl -n istio-operator apply -f istio-operator.yaml
+operator:
+	docker build . -t jasonayoung/istio-operator:v1
+	docker push jasonayoung/istio-operator:v1
+	bash create-operator-configmap.sh
